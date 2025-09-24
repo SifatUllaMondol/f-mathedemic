@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Results</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f9fafb; /* light background */
+      color: #1a202c; /* dark text */
+    }
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 2rem;
+    }
+    .card {
+      background-color: #ffffff; /* white cards */
+      border-radius: 1rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-gray-800 flex flex-col items-center min-h-screen p-4 sm:p-8">
+  <div class="container mx-auto p-4 sm:p-8">
+    <div class="card text-center">
+      <h1 class="text-3xl sm:text-4xl font-bold text-teal-600 mb-2">Test Results</h1>
+      <p id="score-summary" class="text-gray-600 text-xl font-semibold mb-6">Calculating score...</p>
+    </div>
+
+    <div id="results-container" class="space-y-6">
+      <p id="loading-message" class="text-center text-lg text-gray-500">Loading results...</p>
+    </div>
+
+    <a href="/index.html"
+       class="block w-full text-center mt-8 py-3 px-6 rounded-lg font-bold text-white bg-teal-500 hover:bg-teal-600 transition-colors duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-teal-300 shadow-lg">
+        Done
+    </a>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const resultsContainer = document.getElementById('results-container');
+      const scoreSummary = document.getElementById('score-summary');
+      const loadingMessage = document.getElementById('loading-message');
+
+      function displayResults() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const resultsString = urlParams.get('results');
+
+        if (!resultsString) {
+          loadingMessage.textContent = 'No test results found.';
+          return;
+        }
+
+        try {
+          // Fix: Remove redundant decodeURIComponent() call
+          const results = JSON.parse(resultsString);
+          
+          loadingMessage.style.display = 'none';
+
+          let correctCount = 0;
+          results.forEach((q, index) => {
+            const isCorrect = q.is_correct;
+            if (isCorrect) correctCount++;
+
+            const resultCard = document.createElement('div');
+            resultCard.className = `card border-l-4 ${isCorrect ? 'border-green-500' : 'border-red-500'}`;
+            resultCard.innerHTML = `
+              <h3 class="text-xl font-semibold mb-2">Question ${index + 1}</h3>
+              <p class="mb-2"><strong>Question:</strong> ${q.question}</p>
+              <p class="mb-2"><strong>Your Answer:</strong> 
+                <span class="${isCorrect ? 'text-green-600' : 'text-red-600'}">${q.student_answer}</span>
+              </p>
+              <p class="mb-2"><strong>Correct Answer:</strong> 
+                <span class="text-green-600">${q.correct_answer}</span>
+              </p>
+              <p class="font-bold text-lg ${isCorrect ? 'text-green-600' : 'text-red-600'}">
+                ${isCorrect ? 'Correct!' : 'Incorrect'}
+              </p>
+            `;
+            resultsContainer.appendChild(resultCard);
+          });
+
+          const totalQuestions = results.length;
+          scoreSummary.textContent =
+            `You scored ${correctCount} out of ${totalQuestions} (${((correctCount / totalQuestions) * 100).toFixed(0)}%)`;
+
+        } catch (e) {
+          loadingMessage.textContent = 'Failed to parse results data.';
+          console.error('Error parsing results:', e);
+        }
+      }
+
+      displayResults();
+    });
+  </script>
+</body>
+</html>

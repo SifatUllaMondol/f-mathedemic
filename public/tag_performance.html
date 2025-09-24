@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tag Performance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa; /* Mild, light background */
+            color: #495057; /* Soft dark gray text */
+        }
+        .container {
+            max-width: 600px; /* Smaller container width */
+            margin: 2rem auto;
+            padding: 1.5rem;
+        }
+        .card {
+            background-color: #e9ecef; /* Mild light gray card background */
+            border-radius: 0.75rem; /* Slightly smaller border radius */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Softer shadow */
+            padding: 1.5rem; /* Reduced padding */
+            margin-bottom: 1rem;
+        }
+        .progress-bar-container {
+            background-color: #ced4da; /* Muted light gray progress bar container */
+            border-radius: 9999px;
+            height: 10px; /* Slightly smaller height */
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            transition: width 0.5s ease-in-out;
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-700 flex flex-col items-center min-h-screen p-2 sm:p-8">
+    <div class="container mx-auto p-4 sm:p-8">
+        <div class="card bg-gray-200 text-center">
+            <h1 class="text-2xl sm:text-3xl font-bold text-teal-600 mb-2">Test Performance</h1>
+            <p class="text-gray-600 mb-4 text-sm">See how you're performing on different topics.</p>
+        </div>
+
+        <div id="performance-container" class="space-y-4">
+            <p id="loading-message" class="text-center text-lg text-gray-500">Loading your performance data...</p>
+        </div>
+
+        <a href="/index.html" class="block w-full text-center mt-6 py-2 px-4 rounded-md font-semibold text-white bg-teal-500 hover:bg-teal-600 transition-colors duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-teal-300 shadow-md">Back to Home</a>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const performanceContainer = document.getElementById('performance-container');
+            const loadingMessage = document.getElementById('loading-message');
+
+            async function fetchPerformanceData() {
+                const token = localStorage.getItem('token'); 
+
+                if (!token) {
+                    loadingMessage.textContent = 'Error: You must be logged in to view your performance.';
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/profile', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                    });
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        loadingMessage.textContent = `Error: ${data.error || 'Failed to load performance data.'}`;
+                        return;
+                    }
+
+                    if (data && data.performance) {
+                        renderPerformanceCards(data.performance);
+                    } else {
+                        loadingMessage.textContent = 'No performance data available.';
+                    }
+
+                } catch (error) {
+                    loadingMessage.textContent = 'Failed to load performance data. Please check the server.';
+                    console.error('Error fetching performance:', error);
+                }
+            }
+
+            function renderPerformanceCards(performanceData) {
+                loadingMessage.style.display = 'none';
+                performanceContainer.innerHTML = '';
+
+                const tags = Object.keys(performanceData);
+                
+                if (tags.length === 0) {
+                    performanceContainer.innerHTML = '<p class="text-center text-md text-gray-400">You have not completed any tests yet. Start a test to see your performance!</p>';
+                    return;
+                }
+
+                tags.forEach(tag => {
+                    const { total, correct, percentage } = performanceData[tag];
+                    
+                    let progressColorClass = 'bg-red-400';
+                    if (percentage >= 75) {
+                        progressColorClass = 'bg-teal-500';
+                    } else if (percentage >= 50) {
+                        progressColorClass = 'bg-yellow-500';
+                    } else {
+                        progressColorClass = 'bg-red-400';
+                    }
+
+                    const performanceCard = document.createElement('div');
+                    performanceCard.className = 'card bg-gray-100';
+                    performanceCard.innerHTML = `
+                        <h3 class="text-lg font-bold mb-2 capitalize text-teal-600">${tag}</h3>
+                        <p class="text-xs text-gray-600 mb-1">Questions Answered: ${total}</p>
+                        <p class="text-xs text-gray-600 mb-3">Correct Answers: ${correct}</p>
+                        <div class="flex items-center space-x-3">
+                            <div class="progress-bar-container w-full">
+                                <div class="progress-bar ${progressColorClass}" style="width: ${percentage}%;"></div>
+                            </div>
+                            <span class="text-sm font-bold w-12 text-right">${percentage}%</span>
+                        </div>
+                    `;
+                    performanceContainer.appendChild(performanceCard);
+                });
+            }
+            
+            fetchPerformanceData();
+        });
+    </script>
+</body>
+</html>
