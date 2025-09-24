@@ -434,29 +434,29 @@ router.get('/practice/:tag', authenticateToken, async (req, res) => {
 
     // 2) Fallback only if we got FEWER than desired questions from AI
     let questions = normalizedAiQs;
-    // if (normalizedAiQs.length < desiredCount) {
-    //   const remaining = desiredCount - normalizedAiQs.length;
-    //   // In your fallback section, replace the aggregate with:
-    //   const fallback = await QA.aggregate([
-    //     { $match: { tags: tag } },
-    //     { $sample: { size: remaining * 2 } } // Get more than needed
-    //   ])
-    //   .project({ _id: 1, question: 1, tags: 1, answer: 1 });
+    if (normalizedAiQs.length == 0) {
+      const remaining = desiredCount - normalizedAiQs.length;
+      // In your fallback section, replace the aggregate with:
+      const fallback = await QA.aggregate([
+        { $match: { tags: tag } },
+        { $sample: { size: remaining * 2 } } // Get more than needed
+      ])
+      .project({ _id: 1, question: 1, tags: 1, answer: 1 });
 
-    //   // Deduplicate
-    //   const uniqueFallback = [];
-    //   const seen = new Set();
-    //   fallback.forEach(q => {
-    //     const key = q.question?.trim().toLowerCase();
-    //     if (key && !seen.has(key)) {
-    //       seen.add(key);
-    //       uniqueFallback.push(q);
-    //     }
-    //   });
+      // Deduplicate
+      const uniqueFallback = [];
+      const seen = new Set();
+      fallback.forEach(q => {
+        const key = q.question?.trim().toLowerCase();
+        if (key && !seen.has(key)) {
+          seen.add(key);
+          uniqueFallback.push(q);
+        }
+      });
 
-    //   // Take only what we need
-    //   questions = [...normalizedAiQs, ...uniqueFallback.slice(0, remaining)];
-    // }
+      // Take only what we need
+      questions = [...normalizedAiQs, ...uniqueFallback.slice(0, remaining)];
+    }
 
     res.status(200).json({
       questions,
