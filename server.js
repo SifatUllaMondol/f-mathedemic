@@ -434,15 +434,29 @@ router.get('/practice/:tag', authenticateToken, async (req, res) => {
 
     // 2) Fallback only if we got FEWER than desired questions from AI
     let questions = normalizedAiQs;
-    if (normalizedAiQs.length < desiredCount) {
-      const remaining = desiredCount - normalizedAiQs.length;
-      const fallback = await QA.aggregate([
-        { $match: { tags: tag } },
-        { $sample: { size: remaining } }
-      ]).project({ _id: 1, question: 1, tags: 1, answer: 1 });
-      
-      questions = [...normalizedAiQs, ...fallback];
-    }
+    // if (normalizedAiQs.length < desiredCount) {
+    //   const remaining = desiredCount - normalizedAiQs.length;
+    //   // In your fallback section, replace the aggregate with:
+    //   const fallback = await QA.aggregate([
+    //     { $match: { tags: tag } },
+    //     { $sample: { size: remaining * 2 } } // Get more than needed
+    //   ])
+    //   .project({ _id: 1, question: 1, tags: 1, answer: 1 });
+
+    //   // Deduplicate
+    //   const uniqueFallback = [];
+    //   const seen = new Set();
+    //   fallback.forEach(q => {
+    //     const key = q.question?.trim().toLowerCase();
+    //     if (key && !seen.has(key)) {
+    //       seen.add(key);
+    //       uniqueFallback.push(q);
+    //     }
+    //   });
+
+    //   // Take only what we need
+    //   questions = [...normalizedAiQs, ...uniqueFallback.slice(0, remaining)];
+    // }
 
     res.status(200).json({
       questions,
@@ -453,6 +467,100 @@ router.get('/practice/:tag', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Practice route error:', error);
     res.status(500).json({ error: 'Failed to fetch practice questions.' });
+  }
+});
+
+/*
+------------------------------------------------------------------------------------------------------------------------
+*/
+
+/**
+ * @route   POST /api/submit-practice
+ * @desc    Submit practice answers and update performance
+ * @access  Authenticated
+ */
+router.post('/submit-practice', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { answers, tag } = req.body; // `answers` is an array of {questionId, studentAnswer}
+
+    if (!answers || !tag) {
+      return res.status(400).json({ error: 'Answers and tag are required.' });
+    }
+
+    const results = [];
+    const performanceUpdates = {};
+
+    for (const answer of answers) {
+      const { questionId, studentAnswer } = answer;
+      const question = await QA.findById(questionId);
+
+      if (!question) continue;
+
+      // Clean the correct answer to remove any prefix
+      const cleanedCorrectAnswer = question.answer.replace(/^Ans:\s*/, '');
+      
+      const isCorrect = studentAnswer.trim().toLowerCase() === cleanedCorrectAnswer.trim().toLowerCase();
+      
+      results.push({
+        question: question.question,
+        correct_answer: question.answer,
+        student_answer: studentAnswer,
+        is_correct: isCorrect,
+      });
+
+      // Aggregate performance updates
+      if (question.tags && Array.isArray(question.tags)) {
+        for (const tagName of question.tags) {
+          if (!performanceUpdates[tagName]) {
+            performanceUpdates[tagName] = { total: 0, correct: 0 };
+          }
+          performanceUpdates[tagName].total += 1;
+          if (isCorrect) {
+            performanceUpdates[tagName].correct += 1;
+          }
+        }
+      }
+    }
+
+    // Update student performance
+    const performanceDoc = await StudentTagPerformance.findOneAndUpdate(
+      { student: userId },
+      { $setOnInsert: { student: userId } },
+      { upsert: true, new: true }
+    );
+
+    // Update the Map fields
+    for (const tagName in performanceUpdates) {
+      const update = performanceUpdates[tagName];
+      
+      const currentTotal = performanceDoc.tags_performed.get(tagName) || 0;
+      const newTotal = currentTotal + update.total;
+      performanceDoc.tags_performed.set(tagName, newTotal);
+
+      const currentCorrect = performanceDoc.corrected.get(tagName) || 0;
+      const newCorrect = currentCorrect + update.correct;
+      performanceDoc.corrected.set(tagName, newCorrect);
+    }
+
+    // Mark the maps as modified for Mongoose to save changes
+    performanceDoc.markModified('tags_performed');
+    performanceDoc.markModified('corrected');
+    performanceDoc.last_updated = new Date();
+    await performanceDoc.save();
+
+    res.status(200).json({ 
+      message: 'Practice submitted successfully!',
+      results,
+      tag,
+      totalQuestions: answers.length,
+      correctAnswers: results.filter(r => r.is_correct).length,
+      performanceUpdated: true
+    });
+
+  } catch (error) {
+    console.error('Practice submission error:', error);
+    res.status(500).json({ error: 'Failed to submit practice results.' });
   }
 });
 

@@ -6,49 +6,306 @@
     <title>Tag Performance</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f8f9fa; /* Mild, light background */
-            color: #495057; /* Soft dark gray text */
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #495057;
+            min-height: 100vh;
         }
+        
         .container {
-            max-width: 600px; /* Smaller container width */
+            max-width: 700px;
             margin: 2rem auto;
             padding: 1.5rem;
         }
+        
         .card {
-            background-color: #e9ecef; /* Mild light gray card background */
-            border-radius: 0.75rem; /* Slightly smaller border radius */
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Softer shadow */
-            padding: 1.5rem; /* Reduced padding */
-            margin-bottom: 1rem;
+            background: rgba(233, 236, 239, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
         }
-        .progress-bar-container {
-            background-color: #ced4da; /* Muted light gray progress bar container */
-            border-radius: 9999px;
-            height: 10px; /* Slightly smaller height */
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .header-card {
+            background: linear-gradient(135deg, rgba(233, 236, 239, 0.9) 0%, rgba(206, 212, 218, 0.8) 100%);
+            text-align: center;
+            position: relative;
             overflow: hidden;
         }
+        
+        .header-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(20, 184, 166, 0.1) 0%, transparent 70%);
+            animation: pulse-bg 4s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-bg {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.3; }
+            50% { transform: scale(1.1) rotate(180deg); opacity: 0.1; }
+        }
+        
+        .progress-bar-container {
+            background: linear-gradient(90deg, #ced4da 0%, #adb5bd 100%);
+            border-radius: 50px;
+            height: 12px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
         .progress-bar {
             height: 100%;
-            transition: width 0.5s ease-in-out;
-            border-radius: 9999px;
+            border-radius: 50px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.3) 50%, 
+                transparent 100%);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .performance-card {
+            background: linear-gradient(135deg, rgba(241, 243, 244, 0.8) 0%, rgba(233, 236, 239, 0.9) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .performance-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #20b2aa, #14b8a6);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .performance-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .icon-container {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #14b8a6, #0d9488);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .icon-container:hover {
+            transform: rotate(5deg) scale(1.1);
+        }
+        
+        .stat-item {
+            background: rgba(255, 255, 255, 0.5);
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border-left: 3px solid #14b8a6;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-item:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateX(4px);
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e9ecef;
+            border-top: 3px solid #14b8a6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+            opacity: 0;
+        }
+        
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0);
+            }
+        }
+        
+        .back-button {
+            background: linear-gradient(135deg, #14b8a6, #0d9488);
+            position: relative;
+            overflow: hidden;
+            transform: perspective(1000px) rotateX(0deg);
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            transform: perspective(1000px) rotateX(-5deg) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(20, 184, 166, 0.4);
+        }
+        
+        .back-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .back-button:hover::before {
+            left: 100%;
+        }
+        
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .floating-circle {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(20, 184, 166, 0.1), transparent);
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .floating-circle:nth-child(1) {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        
+        .floating-circle:nth-child(2) {
+            width: 120px;
+            height: 120px;
+            top: 60%;
+            right: 15%;
+            animation-delay: 2s;
+        }
+        
+        .floating-circle:nth-child(3) {
+            width: 60px;
+            height: 60px;
+            bottom: 20%;
+            left: 20%;
+            animation-delay: 4s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+        
+        .percentage-badge {
+            background: linear-gradient(135deg, #14b8a6, #0d9488);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(20, 184, 166, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .percentage-badge:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(20, 184, 166, 0.4);
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-700 flex flex-col items-center min-h-screen p-2 sm:p-8">
+<body>
+    <div class="floating-elements">
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+        <div class="floating-circle"></div>
+    </div>
+    
     <div class="container mx-auto p-4 sm:p-8">
-        <div class="card bg-gray-200 text-center">
-            <h1 class="text-2xl sm:text-3xl font-bold text-teal-600 mb-2">Test Performance</h1>
-            <p class="text-gray-600 mb-4 text-sm">See how you're performing on different topics.</p>
+        <div class="card header-card">
+            <div class="relative z-10">
+                <div class="icon-container mx-auto">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-bold text-teal-600 mb-3 tracking-tight">Test Performance</h1>
+                <p class="text-gray-600 text-base leading-relaxed">Track your progress and see how you're mastering different topics</p>
+            </div>
         </div>
 
-        <div id="performance-container" class="space-y-4">
-            <p id="loading-message" class="text-center text-lg text-gray-500">Loading your performance data...</p>
+        <div id="performance-container" class="space-y-6">
+            <div id="loading-message" class="text-center py-8">
+                <div class="loading-spinner"></div>
+                <p class="text-lg text-gray-500 font-medium">Loading your performance data...</p>
+                <p class="text-sm text-gray-400 mt-2">Analyzing your test results</p>
+            </div>
         </div>
 
-        <a href="/index.html" class="block w-full text-center mt-6 py-2 px-4 rounded-md font-semibold text-white bg-teal-500 hover:bg-teal-600 transition-colors duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-teal-300 shadow-md">Back to Home</a>
+        <a href="/index.html" class="back-button block w-full text-center mt-8 py-3 px-6 rounded-xl font-semibold text-white transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-teal-300 relative z-10">
+            <span class="flex items-center justify-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Home
+            </span>
+        </a>
     </div>
     
     <script>
@@ -60,7 +317,17 @@
                 const token = localStorage.getItem('token'); 
 
                 if (!token) {
-                    loadingMessage.textContent = 'Error: You must be logged in to view your performance.';
+                    loadingMessage.innerHTML = `
+                        <div class="text-center py-8">
+                            <div class="icon-container mx-auto bg-red-500">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                </svg>
+                            </div>
+                            <p class="text-lg text-red-500 font-medium">Authentication Required</p>
+                            <p class="text-sm text-gray-400 mt-2">You must be logged in to view your performance</p>
+                        </div>
+                    `;
                     return;
                 }
 
@@ -76,20 +343,61 @@
                     const data = await response.json();
 
                     if (!response.ok) {
-                        loadingMessage.textContent = `Error: ${data.error || 'Failed to load performance data.'}`;
+                        loadingMessage.innerHTML = `
+                            <div class="text-center py-8">
+                                <div class="icon-container mx-auto bg-red-500">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </div>
+                                <p class="text-lg text-red-500 font-medium">Error Loading Data</p>
+                                <p class="text-sm text-gray-400 mt-2">${data.error || 'Failed to load performance data'}</p>
+                            </div>
+                        `;
                         return;
                     }
 
                     if (data && data.performance) {
                         renderPerformanceCards(data.performance);
                     } else {
-                        loadingMessage.textContent = 'No performance data available.';
+                        loadingMessage.innerHTML = `
+                            <div class="text-center py-8">
+                                <div class="icon-container mx-auto bg-gray-500">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                                    </svg>
+                                </div>
+                                <p class="text-lg text-gray-500 font-medium">No Data Available</p>
+                                <p class="text-sm text-gray-400 mt-2">Complete some tests to see your performance metrics</p>
+                            </div>
+                        `;
                     }
 
                 } catch (error) {
-                    loadingMessage.textContent = 'Failed to load performance data. Please check the server.';
+                    loadingMessage.innerHTML = `
+                        <div class="text-center py-8">
+                            <div class="icon-container mx-auto bg-red-500">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <p class="text-lg text-red-500 font-medium">Connection Error</p>
+                            <p class="text-sm text-gray-400 mt-2">Please check your connection and try again</p>
+                        </div>
+                    `;
                     console.error('Error fetching performance:', error);
                 }
+            }
+
+            function getTagIcon(tag) {
+                const icons = {
+                    math: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>',
+                    science: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>',
+                    history: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>',
+                    literature: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>',
+                    default: '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>'
+                };
+                return icons[tag.toLowerCase()] || icons.default;
             }
 
             function renderPerformanceCards(performanceData) {
@@ -99,36 +407,86 @@
                 const tags = Object.keys(performanceData);
                 
                 if (tags.length === 0) {
-                    performanceContainer.innerHTML = '<p class="text-center text-md text-gray-400">You have not completed any tests yet. Start a test to see your performance!</p>';
+                    performanceContainer.innerHTML = `
+                        <div class="card text-center">
+                            <div class="icon-container mx-auto bg-gray-500">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-semibold text-gray-600 mb-2">Ready to Start?</h3>
+                            <p class="text-gray-500">Complete your first test to see performance analytics here!</p>
+                        </div>
+                    `;
                     return;
                 }
 
-                tags.forEach(tag => {
+                tags.forEach((tag, index) => {
                     const { total, correct, percentage } = performanceData[tag];
                     
-                    let progressColorClass = 'bg-red-400';
+                    let progressColorClass = 'bg-gradient-to-r from-red-400 to-red-500';
+                    let badgeColorClass = 'from-red-400 to-red-500';
+                    
                     if (percentage >= 75) {
-                        progressColorClass = 'bg-teal-500';
+                        progressColorClass = 'bg-gradient-to-r from-teal-500 to-teal-600';
+                        badgeColorClass = 'from-teal-500 to-teal-600';
                     } else if (percentage >= 50) {
-                        progressColorClass = 'bg-yellow-500';
-                    } else {
-                        progressColorClass = 'bg-red-400';
+                        progressColorClass = 'bg-gradient-to-r from-yellow-400 to-yellow-500';
+                        badgeColorClass = 'from-yellow-400 to-yellow-500';
                     }
 
                     const performanceCard = document.createElement('div');
-                    performanceCard.className = 'card bg-gray-100';
+                    performanceCard.className = 'card performance-card fade-in';
+                    performanceCard.style.animationDelay = `${index * 0.1}s`;
+                    
                     performanceCard.innerHTML = `
-                        <h3 class="text-lg font-bold mb-2 capitalize text-teal-600">${tag}</h3>
-                        <p class="text-xs text-gray-600 mb-1">Questions Answered: ${total}</p>
-                        <p class="text-xs text-gray-600 mb-3">Correct Answers: ${correct}</p>
-                        <div class="flex items-center space-x-3">
-                            <div class="progress-bar-container w-full">
-                                <div class="progress-bar ${progressColorClass}" style="width: ${percentage}%;"></div>
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center">
+                                <div class="icon-container mr-4">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        ${getTagIcon(tag)}
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-teal-600 capitalize mb-1">${tag}</h3>
+                                    <p class="text-sm text-gray-500">Performance Overview</p>
+                                </div>
                             </div>
-                            <span class="text-sm font-bold w-12 text-right">${percentage}%</span>
+                            <div class="percentage-badge bg-gradient-to-r ${badgeColorClass}">
+                                ${percentage}%
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div class="stat-item">
+                                <p class="text-xs text-gray-500 uppercase tracking-wide font-medium">Total Questions</p>
+                                <p class="text-lg font-bold text-gray-700">${total}</p>
+                            </div>
+                            <div class="stat-item">
+                                <p class="text-xs text-gray-500 uppercase tracking-wide font-medium">Correct Answers</p>
+                                <p class="text-lg font-bold text-teal-600">${correct}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between text-sm">
+                                <span class="text-gray-600 font-medium">Progress</span>
+                                <span class="text-gray-500">${correct}/${total}</span>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar ${progressColorClass}" style="width: 0%; animation-delay: ${index * 0.2 + 0.5}s;" data-width="${percentage}%"></div>
+                            </div>
                         </div>
                     `;
+                    
                     performanceContainer.appendChild(performanceCard);
+                    
+                    // Animate progress bar after card is added
+                    setTimeout(() => {
+                        const progressBar = performanceCard.querySelector('.progress-bar');
+                        const targetWidth = progressBar.dataset.width;
+                        progressBar.style.width = targetWidth;
+                    }, (index * 200) + 500);
                 });
             }
             

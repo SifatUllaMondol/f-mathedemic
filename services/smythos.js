@@ -41,6 +41,19 @@ async function getPracticeByTag({ userId, tag, desiredCount = 5, authToken }) {
     
     console.log('✅ Extracted questions count:', questions.length);
     console.log('✅ First question:', questions[0]);
+
+    // Add this after extracting questions
+    console.log('=== QUESTION CONTENT ANALYSIS ===');
+    const questionTexts = questions.map(q => q.question?.trim().toLowerCase());
+    const uniqueTexts = new Set(questionTexts);
+    console.log(`Total questions: ${questions.length}, Unique questions: ${uniqueTexts.size}`);
+
+    if (questions.length !== uniqueTexts.size) {
+      console.log('⚠️  DUPLICATES FOUND IN AGENT RESPONSE');
+      // Log duplicates
+      const duplicates = questionTexts.filter((text, index) => questionTexts.indexOf(text) !== index);
+      console.log('Duplicate questions:', duplicates);
+    }
     
     return { questions };
     
