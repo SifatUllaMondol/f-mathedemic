@@ -78,27 +78,24 @@
 
       <!-- Tag Selection -->
       <div class="card p-6">
-        <label for="tagSelect" class="block text-lg font-semibold text-gray-700 mb-3">Choose a topic to practice:</label>
+        <label for="dynamicTagSelect" class="block text-lg font-semibold text-gray-700 mb-3">Choose a topic to
+          practice:</label>
         <div class="flex flex-col sm:flex-row gap-4">
-          <select id="tagSelect" class="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
-            <option value="">Select a topic...</option>
-            <option value="ordinary">Ordinary Math</option>
-            <option value="algebra">Algebra</option>
-            <option value="geometry">Geometry</option>
-            <option value="calculus">Calculus</option>
-            <option value="javascript">JavaScript</option>
-            <option value="python">Python</option>
-            <option value="react">React</option>
+          <select id="dynamicTagSelect"
+            class="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
+            <option value="">Loading topics...</option>
           </select>
-          
-          <select id="countSelect" class="px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
+
+          <select id="countSelect"
+            class="px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-500">
             <option value="5">5 questions</option>
             <option value="10">10 questions</option>
             <option value="15">15 questions</option>
             <option value="20">20 questions</option>
           </select>
-          
-          <button id="generateBtn" class="px-6 py-3 bg-purple-500 text-white rounded-lg font-semibold hover:bg-purple-600 transition-colors duration-300">
+
+          <button id="generateBtn"
+            class="px-6 py-3 bg-purple-500 text-white rounded-lg font-semibold hover:bg-purple-600 transition-colors duration-300">
             Generate Questions
           </button>
         </div>
@@ -149,7 +146,7 @@
         window.location.href = 'login.html';
       });
 
-      const tagSelect = document.getElementById('tagSelect');
+      const tagSelect = document.getElementById('dynamicTagSelect');
       const countSelect = document.getElementById('countSelect');
       const generateBtn = document.getElementById('generateBtn');
       const questionsContainer = document.getElementById('questions-container');
@@ -161,6 +158,34 @@
       const newPracticeBtn = document.getElementById('newPracticeBtn');
 
       let currentQuestions = [];
+
+        const fetchTags = async () => {
+    try {
+      const response = await fetch('/api/tags');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      const tags = data.tags; // FIX: The API returns an object with a 'tags' property
+
+      // Clear the loading message
+      tagSelect.innerHTML = '<option value="">Select a topic...</option>';
+
+      // Populate the dropdown with fetched tags
+      tags.forEach(tag => {
+        const option = document.createElement('option');
+        option.value = tag;
+        option.textContent = tag;
+        tagSelect.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Failed to fetch tags:', error);
+      tagSelect.innerHTML = '<option value="">Error loading topics...</option>';
+    }
+  };
+
+  fetchTags();
+
 
       generateBtn.addEventListener('click', generateQuestions);
       checkAnswersBtn.addEventListener('click', checkAnswers);

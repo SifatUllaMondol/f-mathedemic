@@ -124,7 +124,7 @@ router.post('/upload-document', upload.single('file'), async (req, res) => {
     const tagsToInsert = new Set();
     const qasToInsert = [];
 
-    for (const [question, tags, answer] of qas) {
+    for (const [question, tags, difficulty_level, answer] of qas) {
       // Validate question and answer
       if (!question || typeof question !== 'string' || !answer || typeof answer !== 'string') {
         console.warn('Skipping invalid Q&A:', { question, tags, answer });
@@ -141,6 +141,7 @@ router.post('/upload-document', upload.single('file'), async (req, res) => {
         tags: tagsArray,
         doc_type_num: document._id,
         type: document.type,
+        difficulty: difficulty_level
       });
     }
 
@@ -180,6 +181,24 @@ router.post('/upload-document', upload.single('file'), async (req, res) => {
 /*
 ------------------------------------------------------------------------------------------------------------------------
 */
+/**
+ * @route GET /api/tags
+ * @desc Retrieves all unique tags from the database.
+ * @access Public
+ */
+router.get('/tags', async (req, res) => {
+  try {
+    const tags = await Tag.find({}).lean(); // .lean() returns plain JS objects, which is faster
+    if (tags.length === 0) {
+      return res.status(404).json({ message: 'No tags found.' });
+    }
+    const tagNames = tags.map(tag => tag.name);
+    res.status(200).json({ tags: tagNames });
+  } catch (err) {
+    console.error('Error in GET /api/tags:', err);
+    res.status(500).json({ error: 'Failed to fetch tags.', details: err.message });
+  }
+});
 
 /**
  * @route POST /api/login
@@ -567,6 +586,7 @@ router.post('/submit-practice', authenticateToken, async (req, res) => {
 /*
 ------------------------------------------------------------------------------------------------------------------------
 */
+
 
 /*
 Get questions by tag and difficulty

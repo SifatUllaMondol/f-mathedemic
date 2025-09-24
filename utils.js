@@ -1,4 +1,3 @@
-// utils.js
 const pdf = require('pdf-parse');
 const mammoth = require('mammoth');
 const fs = require('fs/promises');
@@ -8,7 +7,6 @@ async function extractTextFromFile(filepath) {
         if (filepath.endsWith('.pdf')) {
             const dataBuffer = await fs.readFile(filepath);
             const data = await pdf(dataBuffer);
-            console.log('PDF extracted text:', data.text); // Debug log
             return data.text;
         } else if (filepath.endsWith('.docx')) {
             const data = await fs.readFile(filepath);
@@ -23,26 +21,27 @@ async function extractTextFromFile(filepath) {
 }
 
 function parseQuestions(text) {
-    console.log('Text to parse:', JSON.stringify(text)); // Debug log with escaped characters
     if (!text) {
-        console.warn('No text provided to parseQuestions');
         return [];
     }
 
-    // New regex based on user request: from Q-number to [], and Ans: for the answer
-    const pattern = /(Q\d+:\s*(?:.|\n)*?)\[([^\]]+)\]\s*Ans:\s*([\s\S]*?)(?=\n*(?:Q\d+:|$))/g;
+    // Updated regex to capture the difficulty level within curly braces {}
+    // The pattern is: Question [tags]{difficulty} Ans: Answer
+    const pattern = /([\s\S]+?)\s*\[([^\]]+)\]\s*\{([^}]+)\}\s*Ans:\s*([\s\S]*?)(?=(?:[\r\n]+[\s\S]*?\[[\s\S]*?\]\s*\{[\s\S]*?\}\s*Ans:|$))/g;
     const matches = [...text.matchAll(pattern)];
+
     if (matches.length === 0) {
         console.warn('No questions matched in text');
         return [];
     }
 
-    const result = matches.map((match, index) => {
-        console.log(`Match ${index}:`, match); // Debug each match
+    const result = matches.map((match) => {
         const question = match[1] ? match[1].trim() : '';
         const tags = match[2] ? match[2].split(',').map(tag => tag.trim()) : [];
-        const answer = match[3] ? match[3].trim() : '';
-        return [question, tags, answer];
+        const difficulty = match[3] ? match[3].trim() : '';
+        const answer = match[4] ? match[4].trim() : '';
+        // Return an array with all four elements
+        return [question, tags, difficulty, answer];
     });
 
     return result;
