@@ -171,4 +171,104 @@ async function getExplanationForQuestion({ userId, question, userAnswer, correct
   }
 }
 
-module.exports = { getPracticeByTag, getExplanationForQuestion };
+async function chatWithTutor({ userId, message, authToken }) {
+  if (!AGENT_URL) {
+    console.log('❌ No agent URL configured');
+    return { 
+      response: "I'm currently unavailable. Please try again later.",
+      suggestions: [],
+      relatedTags: [],
+      confidenceScore: 0,
+      followUpQuestions: []
+    };
+  }
+
+  const headers = { 'Content-Type': 'application/json' };
+  if (API_KEY) headers.Authorization = `Bearer ${API_KEY}`;
+
+  // Use the chatbot endpoint
+  const chatUrl = AGENT_URL.replace('/practice-by-tag', '/chatbot');
+  
+  const payload = {
+    userId,
+    message,
+    authToken,
+    requestType: "chatbot"
+  };
+
+  console.log('=== SMYTHOS CHATBOT REQUEST ===');
+  console.log('URL:', chatUrl);
+  console.log('Payload:', { userId, message: message.substring(0, 100) + '...', authToken: authToken ? '***' : 'MISSING' });
+
+  try {
+    const response = await axios.post(
+      chatUrl,
+      payload,
+      { headers, timeout: 15000 }
+    );
+    
+    console.log('✅ Chatbot response status:', response.status);
+    
+    let chatData = {
+      response: null,
+      suggestions: [],
+      relatedTags: [],
+      confidenceScore: 0,
+      followUpQuestions: []
+    };
+    
+    if (Array.isArray(response.data)) {
+      const apiOutput = response.data.find(item => item.name === 'APIOutput');
+      if (apiOutput?.result?.Output) {
+        chatData = {
+          response: apiOutput.result.Output.response || "I'm not sure how to help with that. Could you rephrase your question?",
+          suggestions: apiOutput.result.Output.suggestions || [],
+          relatedTags: apiOutput.result.Output.relatedTags || [],
+          confidenceScore: apiOutput.result.Output.confidenceScore || 0,
+          followUpQuestions: apiOutput.result.Output.followUpQuestions || []
+        };
+      }
+    } else if (response.data?.result?.Output) {
+      chatData = {
+        response: response.data.result.Output.response || "I'm not sure how to help with that. Could you rephrase your question?",
+        suggestions: response.data.result.Output.suggestions || [],
+        relatedTags: response.data.result.Output.relatedTags || [],
+        confidenceScore: response.data.result.Output.confidenceScore || 0,
+        followUpQuestions: response.data.result.Output.followUpQuestions || []
+      };
+    } else if (response.data?.response) {
+      // Direct response format
+      chatData = {
+        response: response.data.response,
+        suggestions: response.data.suggestions || [],
+        relatedTags: response.data.relatedTags || [],
+        confidenceScore: response.data.confidenceScore || 0,
+        followUpQuestions: response.data.followUpQuestions || []
+      };
+    }
+    
+    console.log('✅ Chatbot response received');
+    return chatData;
+    
+  } catch (err) {
+    console.error('❌ Chatbot error:');
+    console.error('Error message:', err.message);
+    
+    if (err.response) {
+      console.error('Response status:', err.response.status);
+      console.error('Response data:', err.response.data);
+    }
+    
+    // Return fallback response
+    return {
+      response: "I'm having trouble connecting right now. Please try again in a moment.",
+      suggestions: ["Check your internet connection", "Try refreshing the page"],
+      relatedTags: [],
+      confidenceScore: 0,
+      followUpQuestions: ["Would you like to try asking your question again?"]
+    };
+  }
+}
+
+// Update the exports at the bottom
+module.exports = { getPracticeByTag, getExplanationForQuestion, chatWithTutor };

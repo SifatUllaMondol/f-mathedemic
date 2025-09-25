@@ -15,7 +15,7 @@ const User = require('./models/user');
 const { extractTextFromFile, parseQuestions } = require('./utils');
 const fs = require('fs/promises');
 
-const { getPracticeByTag, getExplanationForQuestion } = require('./services/smythos');
+const { getPracticeByTag, getExplanationForQuestion, chatWithTutor } = require('./services/smythos');
 
 const app = express();
 require('dotenv').config();
@@ -747,6 +747,43 @@ router.put('/profile', authenticateToken, async (req, res) => {
     return res
       .status(500)
       .json({ error: 'Failed to update profile.', details: err.message });
+  }
+});
+
+/**
+ * @route   POST /api/chatbot
+ * @desc    Chat with AI tutor that provides personalized learning advice
+ * @access  Authenticated
+ */
+router.post('/chatbot', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { message } = req.body;
+
+    if (!message || message.trim() === '') {
+      return res.status(400).json({ error: 'Message is required.' });
+    }
+
+    const rawAuth = req.headers['authorization'];
+    const authToken = rawAuth && rawAuth.split(' ')[1];
+    
+    const chatData = await chatWithTutor({
+      userId,
+      message: message.trim(),
+      authToken
+    });
+
+    res.status(200).json(chatData);
+
+  } catch (error) {
+    console.error('Chatbot route error:', error);
+    res.status(500).json({ 
+      response: "Sorry, I'm experiencing technical difficulties. Please try again.",
+      suggestions: ["Wait a moment and try again", "Check your connection"],
+      relatedTags: [],
+      confidenceScore: 0,
+      followUpQuestions: []
+    });
   }
 });
 
