@@ -15,7 +15,7 @@ const User = require('./models/user');
 const { extractTextFromFile, parseQuestions } = require('./utils');
 const fs = require('fs/promises');
 
-const { getPracticeByTag } = require('./services/smythos');
+const { getPracticeByTag, getExplanationForQuestion } = require('./services/smythos');
 
 const app = express();
 require('dotenv').config();
@@ -630,6 +630,40 @@ router.get(
     }
   }
 );
+
+/**
+ * @route   POST /api/get-explanation
+ * @desc    Get explanation for a question the user got wrong
+ * @access  Authenticated
+ */
+router.post('/get-explanation', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.user;
+    const { question, userAnswer, correctAnswer } = req.body;
+
+    if (!question || !userAnswer || !correctAnswer) {
+      return res.status(400).json({ error: 'Question, userAnswer, and correctAnswer are required.' });
+    }
+
+    const rawAuth = req.headers['authorization'];
+    const authToken = rawAuth && rawAuth.split(' ')[1];
+
+    // No need to require again since it's already imported at the top
+    const explanationData = await getExplanationForQuestion({
+      userId,
+      question,
+      userAnswer,
+      correctAnswer,
+      authToken
+    });
+
+    res.status(200).json(explanationData);
+
+  } catch (error) {
+    console.error('Explanation route error:', error);
+    res.status(500).json({ error: 'Failed to get explanation.' });
+  }
+});
 
 /**
  * @route   GET /api/profile

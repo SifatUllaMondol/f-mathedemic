@@ -39,6 +39,22 @@
     .border-red-500 {
       border-color: #ef4444 !important;
     }
+    .explanation-btn {
+      transition: all 0.2s ease-in-out;
+    }
+
+    .explanation-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .explanation-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .explanation-content {
+      transition: all 0.3s ease-in-out;
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -335,16 +351,116 @@
           const answerInput = document.getElementById(`answer-${question._id}`);
           
           if (result.is_correct) {
-            feedbackDiv.textContent = '✅ Correct!';
+            feedbackDiv.innerHTML = '✅ Correct!';
             feedbackDiv.className = 'text-green-600 font-medium mt-2';
             answerInput.classList.add('border-green-500');
           } else {
-            feedbackDiv.textContent = `❌ Incorrect. Correct answer: ${result.correct_answer}`;
+            feedbackDiv.innerHTML = `
+              ❌ Incorrect. Correct answer: ${result.correct_answer}
+              <button 
+                class="ml-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded hover:bg-blue-200 explanation-btn"
+                data-question="${question.question}"
+                data-user-answer="${result.student_answer}"
+                data-correct-answer="${result.correct_answer}"
+              >
+                Get Explanation
+              </button>
+              <div class="explanation-content mt-2 hidden"></div>
+            `;
             feedbackDiv.className = 'text-red-600 font-medium mt-2';
             answerInput.classList.add('border-red-500');
           }
           feedbackDiv.classList.remove('hidden');
         });
+
+        // Add event listeners to explanation buttons
+        setTimeout(() => {
+          document.querySelectorAll('.explanation-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+              const question = this.getAttribute('data-question');
+              const userAnswer = this.getAttribute('data-user-answer');
+              const correctAnswer = this.getAttribute('data-correct-answer');
+              const explanationContent = this.nextElementSibling;
+              
+              getExplanation(question, userAnswer, correctAnswer, explanationContent, this);
+            });
+          });
+        }, 100);
+      }
+
+      async function getExplanation(question, userAnswer, correctAnswer, explanationDiv, button) {
+        // Show loading state
+        button.textContent = 'Loading...';
+        button.disabled = true;
+        
+        try {
+          const response = await fetch('/api/get-explanation', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              question,
+              userAnswer,
+              correctAnswer
+            })
+          });
+
+          const explanationData = await response.json();
+
+          if (!response.ok) {
+            throw new Error(explanationData.error || 'Failed to get explanation');
+          }
+
+          // Display the explanation
+          explanationDiv.innerHTML = `
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
+              <div class="font-semibold text-blue-800 mb-2">📚 Explanation:</div>
+              <div class="text-blue-700 mb-2">${explanationData.explanation || 'No explanation available.'}</div>
+              
+              ${explanationData.concept ? `
+                <div class="font-semibold text-blue-800 mb-1">🎯 Concept:</div>
+                <div class="text-blue-700 mb-2">${explanationData.concept}</div>
+              ` : ''}
+              
+              ${explanationData.commonMistakes && explanationData.commonMistakes.length > 0 ? `
+                <div class="font-semibold text-blue-800 mb-1">⚠️ Common Mistakes:</div>
+                <ul class="text-blue-700 mb-2 list-disc list-inside">
+                  ${explanationData.commonMistakes.map(mistake => `<li>${mistake}</li>`).join('')}
+                </ul>
+              ` : ''}
+              
+              ${explanationData.tips && explanationData.tips.length > 0 ? `
+                <div class="font-semibold text-blue-800 mb-1">💡 Tips:</div>
+                <ul class="text-blue-700 list-disc list-inside">
+                  ${explanationData.tips.map(tip => `<li>${tip}</li>`).join('')}
+                </ul>
+              ` : ''}
+            </div>
+          `;
+          
+          explanationDiv.classList.remove('hidden');
+          button.textContent = 'Hide Explanation';
+          button.onclick = function() {
+            explanationDiv.classList.toggle('hidden');
+            button.textContent = explanationDiv.classList.contains('hidden') ? 'Show Explanation' : 'Hide Explanation';
+          };
+          
+        } catch (error) {
+          explanationDiv.innerHTML = `
+            <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+              Failed to load explanation: ${error.message}
+            </div>
+          `;
+          explanationDiv.classList.remove('hidden');
+          button.textContent = 'Try Again';
+          button.onclick = function() {
+            getExplanation(question, userAnswer, correctAnswer, explanationDiv, button);
+          };
+        } finally {
+          button.disabled = false;
+        }
       }
 
       function showSuccessMessage(result) {
