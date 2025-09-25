@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Algebra | Mathedemic</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #fdfdfd 0%, #f3f4f6 100%);
+    }
+    .card {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 2px 4px 10px #4449;
+    }
+    .card:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+    }
+    pre {
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <img src="../img/mlogo.png" alt="Logo" class="h-16 w-auto" />
+        <div class="flex items-center space-x-3">
+         
+          <button id="logoutButton" class="bg-rose-200 text-rose-900 px-4 py-2 rounded-full hover:bg-rose-300 transition-all duration-300 font-semibold">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="flex-grow pt-24 px-4 pb-12 max-w-6xl mx-auto space-y-12">
+
+    <header class="text-center mb-12">
+      <h1 class="text-5xl font-extrabold text-gray-800 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-sky-400">Algebra</h1>
+      <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
+        Learn Algebra in a simple and practical way. This page contains theory, detailed explanations, formulas, and examples for each topic.
+      </p>
+    </header>
+
+    <!-- 1. Basic Algebra -->
+    <section class="p-6 bg-white rounded-2xl shadow card">
+      <h2 class="text-3xl font-bold text-gray-700 mb-4">1. Basic Algebra</h2>
+      <p class="text-gray-600 mb-3">
+        Algebra is a branch of mathematics that uses symbols (like x, y, z) to represent numbers. It allows us to generalize arithmetic operations and solve problems systematically.
+      </p>
+      <h3 class="text-xl font-semibold text-gray-700 mt-3 mb-2">Theory:</h3>
+      <p class="text-gray-600">In basic algebra, expressions, equations, and variables are used to describe patterns and relationships.</p>
+      <h3 class="text-xl font-semibold text-gray-700 mt-3 mb-2">Example:</h3>
+      <pre class="bg-gray-100 p-4 rounded text-indigo-600 font-mono">x + 5 = 10 → x = 10 - 5 → x = 5</pre>
+      <p class="text-gray-600 mt-2">Here, x represents the unknown number.</p>
+    </section>
+
+    <!-- 2. Linear Equations -->
+    <section class="p-6 bg-white rounded-2xl shadow card">
+      <h2 class="text-3xl font-bold text-gray-700 mb-4">2. Linear Equations</h2>
+      <p class="text-gray-600 mb-3">
+        Linear equations are algebraic equations in which the variable has a power of 1. They form a straight line when graphed.
+      </p>
+      <h3 class="text-xl font-semibold text-gray-700 mt-3 mb-2">Theory:</h3>
+      <p class="text-gray-600">A linear equation in one variable has the form: ax + b = 0, where a ≠ 0.</p>
+      <h3 class="text-xl font-semibold text-gray-700 mt-3 mb-2">Example:</h3>
+      <pre class="bg-gray-100 p-4 rounded text-green-600 font-mono">2x + 3 = 7 → 2x = 4 → x = 2</pre>
+      <p class="text-gray-600 mt-2">This shows how to isolate x to solve the equation.</p>
+    </section>
+
+    <!-- 3. Quadratic Equations -->
+    <section class="p-6 bg-white rounded-2xl shadow card">
+      <h2 class="text-3xl font-bold text-gray-700 mb-4">3. Quadratic Equations</h2>
+      <p class="text-gray-600 mb-3">
+        Quadratic equations are equations where the highest power of the variable is 2. They are important in physics, engineering, and real-world problem-solving.
+      </p>
+      <h3 class="text-xl font-semibold text-gray-700 mt-3 mb-2">Theory:</h3>
+      <p class="text-gray-600">A quadratic equation has the general form: ax² + bx + c = 0, where a ≠ 0.</p>
+      <h3 class="text-xl font-semibold text-gray-700 mt-3 mb-2">Solution:</h3>
+      <pre class="bg-gray-100 p-4 rounded text-green-600 font-mono">x = [-b ± √(b² - 4ac)] / 2a</pre>
+      <h3 class="text-xl font-semibold text-gray-700 mt-3 mb-2">Example:</h3>
+      <pre class="bg-gray-100 p-4 rounded text-green-600 font-mono">x² - 5x + 6 = 0 → x = 2 or x = 3</pre>
+    </section>
+
+    <!-- 4. Factorization -->
+    <section class="p-6 bg-white rounded-2xl shadow card">
+      <h2 class="text-3xl font-bold text-gray-700 mb-4">4. Factorization</h2>
+      <p class="text-gray-600 mb-3">
+        Factorization is expressing an algebraic expression as a product of simpler expressions (factors). It simplifies solving equations.
+      </p>
+      <h3 class="text-xl font-semibold text-gray-700 mt-3 mb-2">Theory:</h3>
+      <p class="text-gray-600">Factorization techniques include:</p>
+      <ul class="list-disc list-inside text-gray-600 mt-2">
+        <li>Common factor extraction</li>
+        <li>Difference of squares</li>
+        <li>Trinomial factorization</li>
+      </ul>
+      <h3 class="text-xl font-semibold text-gray-700 mt-3 mb-2">Example:</h3>
+      <pre class="bg-gray-100 p-4 rounded text-yellow-700 font-mono">x² + 5x + 6 = (x + 2)(x + 3)</pre>
+    </section>
+
+    <!-- 5. Algebraic Identities -->
+    <section class="p-6 bg-white rounded-2xl shadow card">
+      <h2 class="text-3xl font-bold text-gray-700 mb-4">5. Algebraic Identities</h2>
+      <p class="text-gray-600 mb-3">
+        Algebraic identities are formulas that are always true for all values of variables. They simplify calculations.
+      </p>
+      <h3 class="text-xl font-semibold text-gray-700 mt-3 mb-2">Important Identities:</h3>
+      <ul class="list-disc list-inside text-gray-600 mt-2">
+        <li>(a + b)² = a² + 2ab + b²</li>
+        <li>(a - b)² = a² - 2ab + b²</li>
+        <li>a² - b² = (a - b)(a + b)</li>
+        <li>(x + a)(x + b) = x² + (a + b)x + ab</li>
+      </ul>
+      <h3 class="text-xl font-semibold text-gray-700 mt-3 mb-2">Example:</h3>
+      <pre class="bg-gray-100 p-4 rounded text-green-600 font-mono">(x + 3)² = x² + 6x + 9</pre>
+    </section>
+
+    <!-- 6. Systems of Equations -->
+    <section class="p-6 bg-white rounded-2xl shadow card">
+      <h2 class="text-3xl font-bold text-gray-700 mb-4">6. Systems of Equations</h2>
+      <p class="text-gray-600 mb-3">
+        Systems of equations consist of multiple equations with multiple variables. The goal is to find values of variables that satisfy all equations simultaneously.
+      </p>
+      <h3 class="text-xl font-semibold text-gray-700 mt-3 mb-2">Example:</h3>
+      <pre class="bg-gray-100 p-4 rounded text-green-600 font-mono">
+x + y = 10
+2x - y = 3
+Solve: x = 13/3, y = 17/3
+      </pre>
+    </section>
+
+    <!-- 7. Polynomials -->
+    <section class="p-6 bg-white rounded-2xl shadow card">
+      <h2 class="text-3xl font-bold text-gray-700 mb-4">7. Polynomials</h2>
+      <p class="text-gray-600 mb-3">
+        Polynomials are expressions with one or more terms, consisting of variables and coefficients combined using addition, subtraction, and multiplication.
+      </p>
+      <h3 class="text-xl font-semibold text-gray-700 mt-3 mb-2">Example:</h3>
+      <pre class="bg-gray-100 p-4 rounded text-green-600 font-mono">P(x) = 2x³ + 3x² - x + 5</pre>
+    </section>
+
+    <!-- 8. Exponents & Powers -->
+    <section class="p-6 bg-white rounded-2xl shadow card">
+      <h2 class="text-3xl font-bold text-gray-700 mb-4">8. Exponents & Powers</h2>
+      <p class="text-gray-600 mb-3">
+        Exponents represent repeated multiplication of the same number. xⁿ means multiplying x by itself n times.
+      </p>
+      <h3 class="text-xl font-semibold text-gray-700 mt-3 mb-2">Example:</h3>
+      <pre class="bg-gray-100 p-4 rounded text-green-600 font-mono">2³ = 2 × 2 × 2 = 8</pre>
+    </section>
+
+    <!-- 9. Inequalities -->
+    <section class="p-6 bg-white rounded-2xl shadow card">
+      <h2 class="text-3xl font-bold text-gray-700 mb-4">9. Inequalities</h2>
+      <p class="text-gray-600 mb-3">
+        Inequalities show the relationship between expressions that are not equal. Symbols: &gt;, &lt;, &ge;, &le;
+      </p>
+      <h3 class="text-xl font-semibold text-gray-700 mt-3 mb-2">Example:</h3>
+      <pre class="bg-gray-100 p-4 rounded text-green-600 font-mono">x + 3 > 7 → x > 4</pre>
+    </section>
+
+  </main>
+
+  <script>
+    document.getElementById('logoutButton').addEventListener('click', function() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      window.location.href = 'login.html';
+    });
+  </script>
+</body>
+</html>

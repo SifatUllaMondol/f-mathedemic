@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Permutation & Combination | Mathedemic</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #fdfdfd 0%, #f3f4f6 100%);
+    }
+    .card {
+      transition: all 0.3s ease-in-out;
+      box-shadow: 2px 4px 12px rgba(0,0,0,0.08);
+    }
+    .card:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+    }
+    pre {
+      overflow-x: auto;
+      background: #f3f4f6;
+      padding: 1rem;
+      border-radius: 0.5rem;
+    }
+    h2,h3 {
+      scroll-margin-top: 4rem;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Navbar -->
+  <nav class="fixed top-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-md shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <img src="../img/mlogo.png" alt="Logo" class="h-16 w-auto" />
+        <div class="flex items-center space-x-3">
+          <button id="logoutButton" class="bg-rose-200 text-rose-900 px-4 py-2 rounded-full hover:bg-rose-300 transition-all duration-300 font-semibold">Logout</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="flex-grow pt-24 px-4 pb-12 max-w-6xl mx-auto space-y-12">
+
+    <!-- Header -->
+    <header class="text-center mb-12">
+      <h1 class="text-5xl font-extrabold text-gray-800 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-sky-400">
+        Permutation & Combination
+      </h1>
+      <p class="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
+        Complete theory, examples, and detailed explanations from basic to advanced level.
+      </p>
+    </header>
+
+    <!-- Theory Section -->
+    <section class="p-6 bg-white rounded-2xl shadow card">
+      <h2 class="text-3xl font-bold text-gray-700 mb-4">1. Permutation Theory</h2>
+      <p class="text-gray-600 mb-2">
+        Permutation refers to the arrangement of objects in a specific order. Order <strong>matters</strong> in permutation.
+      </p>
+      <pre class="text-green-600 font-mono">
+Number of permutations of n distinct objects = n!
+Permutation of r objects from n = P(n, r) = n! / (n-r)!
+      </pre>
+      <p class="text-gray-600">
+        Example: Arrange 3 letters A, B, C → 3! = 6 ways: ABC, ACB, BAC, BCA, CAB, CBA
+      </p>
+    </section>
+
+    <!-- Combination Theory -->
+    <section class="p-6 bg-white rounded-2xl shadow card">
+      <h2 class="text-3xl font-bold text-gray-700 mb-4">2. Combination Theory</h2>
+      <p class="text-gray-600 mb-2">
+        Combination refers to the selection of objects where order <strong>does not matter</strong>.
+      </p>
+      <pre class="text-green-600 font-mono">
+Number of combinations of n objects taken r at a time = C(n, r) = n! / (r!(n-r)!)
+      </pre>
+      <p class="text-gray-600">
+        Example: Select 2 letters from A, B, C → C(3,2) = 3 ways: AB, AC, BC
+      </p>
+    </section>
+
+    <!-- Advanced Concepts -->
+    <section class="p-6 bg-white rounded-2xl shadow card">
+      <h2 class="text-3xl font-bold text-gray-700 mb-4">3. Advanced Concepts</h2>
+
+      <h3 class="text-2xl font-semibold text-gray-700 mt-3 mb-2">3.1 Permutation with Identical Objects</h3>
+      <p class="text-gray-600">
+        When objects are identical, total arrangements decrease:  
+      </p>
+      <pre class="text-green-600 font-mono">
+Permutation = n! / (p1! p2! ... pk!)
+      </pre>
+      <p class="text-gray-600">
+        Example: Word "SUCCESS" → S=3, C=2, U=1, E=1 → 7! / (3!2!1!1!) = 420
+      </p>
+
+      <h3 class="text-2xl font-semibold text-gray-700 mt-3 mb-2">3.2 Permutations with Restrictions</h3>
+      <p class="text-gray-600">
+        Case 1: Certain elements together → treat as a single block.  
+        Example: Arrange A, B, C, D with A & B together → Total = 12 ways  
+        Case 2: Certain elements not together → Total − arrangements with together.
+      </p>
+
+      <h3 class="text-2xl font-semibold text-gray-700 mt-3 mb-2">3.3 Circular Permutations</h3>
+      <p class="text-gray-600">
+        Circular permutations formula: (n-1)!  
+        If identical objects, divide by factorials of identical objects.  
+        Example: A, A, B around circle → (3-1)! / 2! = 1 way
+      </p>
+    </section>
+
+    <!-- Examples Section -->
+    <section class="p-6 bg-white rounded-2xl shadow card">
+      <h2 class="text-3xl font-bold text-gray-700 mb-4">4. Examples & Explanations</h2>
+      <p class="text-gray-600 mb-2">
+        1. How many 3-letter codes can be formed from A, B, C, D, E if no letter repeats?  
+        Solution: P(5,3) = 5 × 4 × 3 = 60
+      </p>
+      <p class="text-gray-600 mb-2">
+        2. How many ways can a team of 2 boys and 2 girls be formed from 4 boys and 3 girls?  
+        Solution: C(4,2) × C(3,2) = 6 × 3 = 18
+      </p>
+      <p class="text-gray-600 mb-2">
+        3. Arranging letters of "MISSISSIPPI":  
+        M=1, I=4, S=4, P=2 → 11! / (1!4!4!2!) = 34650
+      </p>
+    </section>
+
+  </main>
+
+  <script>
+    document.getElementById('logoutButton').addEventListener('click', function() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      window.location.href = 'login.html';
+    });
+  </script>
+
+</body>
+</html>
