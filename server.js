@@ -14,6 +14,7 @@ const TestQuestion = require('./models/TestQuestion');
 const User = require('./models/user'); 
 const { extractTextFromFile, parseQuestions } = require('./utils');
 const fs = require('fs/promises');
+const ChatHistory = require('./models/ChatHistory');
 
 const { getPracticeByTag, getExplanationForQuestion, chatWithTutor } = require('./services/smythos');
 
@@ -752,7 +753,7 @@ router.put('/profile', authenticateToken, async (req, res) => {
 
 /**
  * @route   POST /api/chatbot
- * @desc    Chat with AI tutor that provides personalized learning advice
+ * @desc    Chat with AI tutor and save conversation history
  * @access  Authenticated
  */
 router.post('/chatbot', authenticateToken, async (req, res) => {
@@ -767,11 +768,40 @@ router.post('/chatbot', authenticateToken, async (req, res) => {
     const rawAuth = req.headers['authorization'];
     const authToken = rawAuth && rawAuth.split(' ')[1];
     
+    // Get or create chat history for user
+    let chatHistory = await ChatHistory.findOne({ student: userId });
+    
+    if (!chatHistory) {
+      chatHistory = new ChatHistory({
+        student: userId,
+        messages: []
+      });
+    }
+
+    // Add user message to history
+    chatHistory.messages.push({
+      role: 'user',
+      content: message.trim()
+    });
+
+    // Save user message first
+    await chatHistory.save();
+
+    // Get AI response
     const chatData = await chatWithTutor({
       userId,
       message: message.trim(),
       authToken
     });
+
+    // Add AI response to history
+    chatHistory.messages.push({
+      role: 'assistant',
+      content: chatData.response
+    });
+
+    chatHistory.last_updated = new Date();
+    await chatHistory.save();
 
     res.status(200).json(chatData);
 
@@ -784,6 +814,53 @@ router.post('/chatbot', authenticateToken, async (req, res) => {
       confidenceScore: 0,
       followUpQuestions: []
     });
+  }
+});
+
+/**
+ * @route   GET /api/chatbot/history
+ * @desc    Get user's chat history
+ * @access  Authenticated
+ */
+router.get('/chatbot/history', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.user;
+
+    const chatHistory = await ChatHistory.findOne({ student: userId })
+      .sort({ last_updated: -1 });
+
+    if (!chatHistory) {
+      return res.status(200).json({ messages: [] });
+    }
+
+    res.status(200).json({
+      messages: chatHistory.messages,
+      sessionStart: chatHistory.session_start,
+      lastUpdated: chatHistory.last_updated
+    });
+
+  } catch (error) {
+    console.error('Chat history error:', error);
+    res.status(500).json({ error: 'Failed to fetch chat history.' });
+  }
+});
+
+/**
+ * @route   DELETE /api/chatbot/history
+ * @desc    Clear user's chat history
+ * @access  Authenticated
+ */
+router.delete('/chatbot/history', authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.user;
+
+    await ChatHistory.findOneAndDelete({ student: userId });
+
+    res.status(200).json({ message: 'Chat history cleared successfully.' });
+
+  } catch (error) {
+    console.error('Clear chat history error:', error);
+    res.status(500).json({ error: 'Failed to clear chat history.' });
   }
 });
 

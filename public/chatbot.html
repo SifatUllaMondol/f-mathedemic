@@ -55,6 +55,24 @@
       0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
       40% { transform: scale(1); opacity: 1; }
     }
+    /* Add smooth scrolling */
+#chat-messages {
+  scroll-behavior: smooth;
+}
+
+/* Style for timestamps */
+.text-opacity-80 {
+  opacity: 0.8;
+}
+
+/* Clear history button animation */
+.clear-history-btn {
+  transition: all 0.3s ease;
+}
+
+.clear-history-btn:hover {
+  transform: scale(1.05);
+}
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -109,20 +127,7 @@
 
       <!-- Chat Messages -->
       <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-4">
-        <!-- Welcome message -->
-        <div class="message-bot p-4 max-w-[80%]">
-          <div class="font-semibold text-gray-700 mb-1">Math Tutor</div>
-          <div class="text-gray-800">
-            Hello! I'm your AI math tutor. I can help you with:
-            <ul class="list-disc list-inside mt-2 space-y-1">
-              <li>Checking your progress and performance</li>
-              <li>Explaining math concepts</li>
-              <li>Suggesting what to study next</li>
-              <li>Answering math questions</li>
-            </ul>
-            <p class="mt-2">What would you like to know about your learning journey?</p>
-          </div>
-        </div>
+        <!-- Messages will be loaded dynamically by JavaScript -->
       </div>
 
       <!-- Chat Input -->
@@ -153,142 +158,271 @@
   </main>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        window.location.href = 'login.html';
+  document.addEventListener('DOMContentLoaded', () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = 'login.html';
+    }
+
+    // Logout functionality
+    document.getElementById('logoutButton').addEventListener('click', function() {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      window.location.href = 'login.html';
+    });
+
+    const chatMessages = document.getElementById('chat-messages');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+
+    let chatHistory = [];
+
+    // Load chat history on page load
+    loadChatHistory();
+
+    // Auto-scroll to bottom
+    function scrollToBottom() {
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Add message to chat
+    function addMessage(content, isUser = false, timestamp = null) {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = isUser ? 'message-user p-4 max-w-[80%] ml-auto' : 'message-bot p-4 max-w-[80%]';
+      
+      const time = timestamp ? new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      
+      if (isUser) {
+        messageDiv.innerHTML = `
+          <div class="flex justify-between items-center mb-1">
+            <div class="font-semibold text-white">You</div>
+            <div class="text-white text-opacity-80 text-xs">${time}</div>
+          </div>
+          <div class="text-white">${content}</div>
+        `;
+      } else {
+        messageDiv.innerHTML = `
+          <div class="flex justify-between items-center mb-1">
+            <div class="font-semibold text-gray-700">Math Tutor</div>
+            <div class="text-gray-500 text-xs">${time}</div>
+          </div>
+          <div class="text-gray-800">${content}</div>
+        `;
+      }
+      
+      chatMessages.appendChild(messageDiv);
+      scrollToBottom();
+    }
+
+    // Show typing indicator
+    function showTypingIndicator() {
+      const typingDiv = document.createElement('div');
+      typingDiv.className = 'message-bot p-4 max-w-[80%]';
+      typingDiv.id = 'typing-indicator';
+      typingDiv.innerHTML = `
+        <div class="font-semibold text-gray-700 mb-1">Math Tutor</div>
+        <div class="typing-indicator">
+          <span class="typing-dot"></span>
+          <span class="typing-dot"></span>
+          <span class="typing-dot"></span>
+        </div>
+      `;
+      chatMessages.appendChild(typingDiv);
+      scrollToBottom();
+    }
+
+    // Hide typing indicator
+    function hideTypingIndicator() {
+      const typingIndicator = document.getElementById('typing-indicator');
+      if (typingIndicator) {
+        typingIndicator.remove();
+      }
+    }
+
+    // Load chat history from server
+async function loadChatHistory() {
+  try {
+    const response = await fetch('/api/chatbot/history', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      chatHistory = data.messages || [];
+      
+      // Clear current messages except welcome
+      const welcomeMessage = chatMessages.querySelector('.message-bot');
+      chatMessages.innerHTML = '';
+      if (welcomeMessage) {
+        chatMessages.appendChild(welcomeMessage);
       }
 
-      // Logout functionality
-      document.getElementById('logoutButton').addEventListener('click', function() {
-        localStorage.removeItem('token');
-        localStorage.removeItem('userId');
-        window.location.href = 'login.html';
+      // Display history messages with metadata
+      chatHistory.forEach(msg => {
+        if (msg.role === 'user') {
+          addMessage(msg.content, true, msg.timestamp);
+        } else {
+          // For assistant messages, include metadata
+          let fullContent = msg.content;
+          
+          if (msg.metadata) {
+            // Add suggestions if available
+            if (msg.metadata.suggestions && msg.metadata.suggestions.length > 0) {
+              fullContent += '\n\n💡 Suggestions:\n• ' + msg.metadata.suggestions.join('\n• ');
+            }
+            
+            // Add follow-up questions if available
+            if (msg.metadata.followUpQuestions && msg.metadata.followUpQuestions.length > 0) {
+              fullContent += '\n\n🔍 Follow-up Questions:\n• ' + msg.metadata.followUpQuestions.join('\n• ');
+            }
+            
+            // Add confidence score if available
+            if (msg.metadata.confidenceScore && msg.metadata.confidenceScore > 0) {
+              fullContent += `\n\n🎯 Confidence: ${Math.round(msg.metadata.confidenceScore * 100)}%`;
+            }
+          }
+          
+          addMessage(fullContent, false, msg.timestamp);
+        }
       });
 
-      const chatMessages = document.getElementById('chat-messages');
-      const messageInput = document.getElementById('message-input');
-      const sendButton = document.getElementById('send-button');
-
-      // Auto-scroll to bottom
-      function scrollToBottom() {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+      if (chatHistory.length === 0) {
+        // Show welcome message if no history
+        addWelcomeMessage();
       }
+    }
+  } catch (error) {
+    console.error('Failed to load chat history:', error);
+    addWelcomeMessage();
+  }
+}
 
-      // Add message to chat
-      function addMessage(content, isUser = false) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = isUser ? 'message-user p-4 max-w-[80%] ml-auto' : 'message-bot p-4 max-w-[80%]';
-        
-        if (isUser) {
-          messageDiv.innerHTML = `
-            <div class="font-semibold text-white mb-1">You</div>
-            <div class="text-white">${content}</div>
-          `;
-        } else {
-          messageDiv.innerHTML = `
-            <div class="font-semibold text-gray-700 mb-1">Math Tutor</div>
-            <div class="text-gray-800">${content}</div>
-          `;
+    // Add welcome message
+    // Add welcome message
+    function addWelcomeMessage() {
+      const welcomeDiv = document.createElement('div');
+      welcomeDiv.className = 'message-bot p-4 max-w-[80%]';
+      welcomeDiv.innerHTML = `
+        <div class="font-semibold text-gray-700 mb-1">Math Tutor</div>
+        <div class="text-gray-800">
+          Hello! I'm your AI math tutor. I can help you with:
+          <ul class="list-disc list-inside mt-2 space-y-1">
+            <li>Checking your progress and performance</li>
+            <li>Explaining math concepts</li>
+            <li>Suggesting what to study next</li>
+            <li>Answering math questions</li>
+          </ul>
+          <p class="mt-2">What would you like to know about your learning journey?</p>
+        </div>
+      `;
+      chatMessages.appendChild(welcomeDiv);
+      scrollToBottom();
+    }
+
+    // Clear chat history
+    async function clearChatHistory() {
+      try {
+        const response = await fetch('/api/chatbot/history', {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          // Reload the page to start fresh
+          location.reload();
         }
-        
-        chatMessages.appendChild(messageDiv);
-        scrollToBottom();
+      } catch (error) {
+        console.error('Failed to clear chat history:', error);
       }
+    }
+
+    // Send message to chatbot
+    async function sendMessage() {
+      const message = messageInput.value.trim();
+      if (!message) return;
+
+      // Add user message to chat immediately
+      addMessage(message, true);
+      messageInput.value = '';
 
       // Show typing indicator
-      function showTypingIndicator() {
-        const typingDiv = document.createElement('div');
-        typingDiv.className = 'message-bot p-4 max-w-[80%]';
-        typingDiv.id = 'typing-indicator';
-        typingDiv.innerHTML = `
-          <div class="font-semibold text-gray-700 mb-1">Math Tutor</div>
-          <div class="typing-indicator">
-            <span class="typing-dot"></span>
-            <span class="typing-dot"></span>
-            <span class="typing-dot"></span>
-          </div>
-        `;
-        chatMessages.appendChild(typingDiv);
-        scrollToBottom();
-      }
+      showTypingIndicator();
+      sendButton.disabled = true;
 
-      // Hide typing indicator
-      function hideTypingIndicator() {
-        const typingIndicator = document.getElementById('typing-indicator');
-        if (typingIndicator) {
-          typingIndicator.remove();
+      try {
+        const response = await fetch('/api/chatbot', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ message })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to send message');
         }
-      }
 
-      // Send message to chatbot
-      async function sendMessage() {
-        const message = messageInput.value.trim();
-        if (!message) return;
+        hideTypingIndicator();
 
-        // Add user message to chat
-        addMessage(message, true);
-        messageInput.value = '';
-
-        // Show typing indicator
-        showTypingIndicator();
-        sendButton.disabled = true;
-
-        try {
-          const response = await fetch('/api/chatbot', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({ message })
-          });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.error || 'Failed to send message');
-          }
-
-          hideTypingIndicator();
-
-          // Add bot response
-          let botResponse = data.response;
-          
-          // Add suggestions if available
-          if (data.suggestions && data.suggestions.length > 0) {
-            botResponse += '\n\n💡 Suggestions:\n• ' + data.suggestions.join('\n• ');
-          }
-          
-          // Add follow-up questions if available
-          if (data.followUpQuestions && data.followUpQuestions.length > 0) {
-            botResponse += '\n\n🔍 Follow-up Questions:\n• ' + data.followUpQuestions.join('\n• ');
-          }
-
-          addMessage(botResponse, false);
-
-        } catch (error) {
-          hideTypingIndicator();
-          addMessage(`Sorry, I encountered an error: ${error.message}. Please try again.`, false);
-          console.error('Chat error:', error);
-        } finally {
-          sendButton.disabled = false;
-          messageInput.focus();
+        // Add bot response
+        let botResponse = data.response;
+        
+        // Add suggestions if available
+        if (data.suggestions && data.suggestions.length > 0) {
+          botResponse += '\n\n💡 Suggestions:\n• ' + data.suggestions.join('\n• ');
         }
-      }
+        
+        // Add follow-up questions if available
+        if (data.followUpQuestions && data.followUpQuestions.length > 0) {
+          botResponse += '\n\n🔍 Follow-up Questions:\n• ' + data.followUpQuestions.join('\n• ');
+        }
 
-      // Event listeners
-      sendButton.addEventListener('click', sendMessage);
+        addMessage(botResponse, false);
+
+      } catch (error) {
+        hideTypingIndicator();
+        addMessage(`Sorry, I encountered an error: ${error.message}. Please try again.`, false);
+        console.error('Chat error:', error);
+      } finally {
+        sendButton.disabled = false;
+        messageInput.focus();
+      }
+    }
+
+    // Add clear history button to the header
+    function addClearHistoryButton() {
+      const header = document.querySelector('.p-6.border-b');
+      const clearButton = document.createElement('button');
+      clearButton.className = 'ml-auto px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition-colors duration-300';
+      clearButton.innerHTML = '🗑️ Clear History';
+      clearButton.addEventListener('click', clearChatHistory);
       
-      messageInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          sendMessage();
-        }
-      });
+      const headerContent = header.querySelector('.flex.items-center');
+      headerContent.appendChild(clearButton);
+    }
 
-      // Focus input on load
-      messageInput.focus();
+    // Event listeners
+    sendButton.addEventListener('click', sendMessage);
+    
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
     });
-  </script>
+
+    // Initialize
+    addClearHistoryButton();
+    messageInput.focus();
+  });
+</script>
 </body>
 </html>
