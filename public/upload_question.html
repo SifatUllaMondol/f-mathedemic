@@ -55,6 +55,16 @@
     </div>
 
     <script>
+        document.addEventListener("DOMContentLoaded", () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "login.html";
+        }
+        const userType = localStorage.getItem("usertype");
+
+        if (parseInt(userType) != 2) {
+            window.location.href = "index.html";
+    }
         document.getElementById('fileInput').addEventListener('change', function(event) {
             const fileNameSpan = document.getElementById('fileName');
             if (event.target.files.length > 0) {
@@ -95,6 +105,7 @@
                 statusMessage.className = 'text-center mt-4 text-red-600 font-medium';
             }
         });
+    });
     </script>
 </body>
 </html>
