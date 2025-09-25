@@ -222,12 +222,12 @@ router.post('/login', async (req, res) => {
 
         // Create and sign a JSON Web Token
         const token = jwt.sign(
-            { userId: user._id, email: user.email },
+            { userId: user._id, usertype: user.usertype },
             process.env.JWT_SECRET,
             { expiresIn: '10h' } // Token expires in 1 hour
         );
 
-        res.status(200).json({ message: 'Login successful.', token, userId: user._id });
+        res.status(200).json({message: 'Login successful.', token, userId: user._id, usertype: user.usertype});
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ error: 'Failed to log in.', details: error.message });

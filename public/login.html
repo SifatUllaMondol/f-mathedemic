@@ -48,6 +48,12 @@
     </div>
 
     <script>
+        document.addEventListener("DOMContentLoaded", () => {
+        const token = localStorage.getItem("token");
+        if (token) {
+          window.location.href = "index.html";
+        }
+
         document
             .getElementById("loginForm")
             .addEventListener("submit", async function (event) {
@@ -82,7 +88,8 @@
 
                         // Store the token and userId for future use
                         localStorage.setItem("token", data.token);
-                        localStorage.setItem("userId", data.userId);
+                        localStorage.setItem("userId", data.userId);                        
+                        localStorage.setItem("usertype", data.usertype);
 
                         // Redirect to the test page after a short delay
                         window.location.href = "/index.html";
@@ -107,6 +114,8 @@
                     messageDiv.classList.add("bg-red-200", "text-red-800");
                 }
             });
+
+        });
     </script>
 </body>
 
